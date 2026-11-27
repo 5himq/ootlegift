@@ -3,12 +3,12 @@
 //
 // SPDX-License-Identifier: MIT
 
-use tari_engine_types::virtual_substate::{VirtualSubstate, VirtualSubstateId};
+use tari_template_test_tooling::engine_types::virtual_substate::{VirtualSubstate, VirtualSubstateId};
 use tari_template_lib::types::{Amount, ComponentAddress};
 use tari_template_lib::types::constants::TARI_TOKEN;
 use tari_template_test_tooling::crypto::RistrettoSecretKey;
 use tari_template_test_tooling::support::assert_error::assert_reject_reason;
-use tari_template_test_tooling::transaction::{Workspace, args};
+use tari_template_test_tooling::transaction::args;
 use tari_template_test_tooling::TemplateTest;
 
 const TEMPLATE_NAME: &str = "GiftCard";
@@ -38,7 +38,7 @@ fn set_epoch(test: &mut TemplateTest, new_epoch: u64) {
 struct Setup {
     creator_account: ComponentAddress,
     creator_proof: tari_template_lib::types::NonFungibleAddress,
-    creator_secret: <redacted>
+    creator_key: RistrettoSecretKey,
     card: ComponentAddress,
 }
 
@@ -46,7 +46,7 @@ struct Setup {
 fn setup(test: &mut TemplateTest, expiry_epoch: Option<u64>) -> Setup {
     set_epoch(test, START_EPOCH);
     let template = test.get_template_address(TEMPLATE_NAME);
-    let (creator_account, creator_proof, creator_secret) = test.create_funded_account();
+    let (creator_account, creator_proof, creator_key) = test.create_funded_account();
 
     test.execute_expect_success(
         test.transaction()
@@ -62,7 +62,7 @@ fn setup(test: &mut TemplateTest, expiry_epoch: Option<u64>) -> Setup {
                     expiry_epoch
                 ],
             )
-            .build_and_seal(&creator_secret),
+            .build_and_seal(&creator_key),
         vec![creator_proof.clone()],
     );
 
@@ -75,7 +75,7 @@ fn setup(test: &mut TemplateTest, expiry_epoch: Option<u64>) -> Setup {
     Setup {
         creator_account,
         creator_proof,
-        creator_secret,
+        creator_key,
         card,
     }
 }
@@ -84,7 +84,7 @@ fn card_balance(test: &mut TemplateTest, setup: &Setup) -> Amount {
     test.execute_expect_success(
         test.transaction()
             .call_method(setup.card, "balance", args![])
-            .build_and_seal(&setup.creator_secret),
+            .build_and_seal(&setup.creator_key),
         vec![],
     );
     test.expect_return::<Amount>(0)
@@ -94,7 +94,7 @@ fn card_status(test: &mut TemplateTest, setup: &Setup) -> String {
     test.execute_expect_success(
         test.transaction()
             .call_method(setup.card, "status", args![])
-            .build_and_seal(&setup.creator_secret),
+            .build_and_seal(&setup.creator_key),
         vec![],
     );
     test.expect_return::<String>(0)
@@ -121,7 +121,7 @@ fn create_and_balance() {
     test.execute_expect_success(
         test.transaction()
             .call_method(setup.card, "message", args![])
-            .build_and_seal(&setup.creator_secret),
+            .build_and_seal(&setup.creator_key),
         vec![],
     );
     assert_eq!(test.expect_return::<String>(0), MESSAGE);
@@ -203,7 +203,7 @@ fn reclaim_before_expiry_fails() {
     let reason = test.execute_expect_failure(
         test.transaction()
             .call_method(setup.card, "reclaim", args![])
-            .build_and_seal(&setup.creator_secret),
+            .build_and_seal(&setup.creator_key),
         vec![setup.creator_proof.clone()],
     );
     assert_reject_reason(reason, "not expired yet");
@@ -215,7 +215,7 @@ fn reclaim_after_expiry_succeeds() {
     let mut test = TemplateTest::my_crate();
     let setup = setup(&mut test, Some(EXPIRY_EPOCH));
 
-    let before = account_balance(&mut test, setup.creator_account, &setup.creator_secret);
+    let before = account_balance(&mut test, setup.creator_account, &setup.creator_key);
 
     set_epoch(&mut test, EXPIRY_EPOCH);
     assert_eq!(card_status(&mut test, &setup), "expired");
@@ -229,11 +229,11 @@ fn reclaim_after_expiry_succeeds() {
                 "deposit",
                 args![Workspace("refund")],
             )
-            .build_and_seal(&setup.creator_secret),
+            .build_and_seal(&setup.creator_key),
         vec![setup.creator_proof.clone()],
     );
 
-    let after = account_balance(&mut test, setup.creator_account, &setup.creator_secret);
+    let after = account_balance(&mut test, setup.creator_account, &setup.creator_key);
     assert_eq!(after, before + Amount::from(AMOUNT));
     assert_eq!(card_balance(&mut test, &setup), Amount::from(0u64));
     assert_eq!(card_status(&mut test, &setup), "reclaimed");
@@ -266,7 +266,7 @@ fn reclaim_without_expiry_fails() {
     let reason = test.execute_expect_failure(
         test.transaction()
             .call_method(setup.card, "reclaim", args![])
-            .build_and_seal(&setup.creator_secret),
+            .build_and_seal(&setup.creator_key),
         vec![setup.creator_proof.clone()],
     );
     assert_reject_reason(reason, "no expiry");
