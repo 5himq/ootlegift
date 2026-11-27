@@ -10,6 +10,9 @@ tari_template_lib = { version = "0.42" }
 [dev-dependencies]
 tari_template_test_tooling = "0.55"
 
+[profile.dev]
+debug = 0
+
 [profile.release]
 opt-level = 's'     # Optimize for size.
 lto = true          # Enable Link Time Optimization.
