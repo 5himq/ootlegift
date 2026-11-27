@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OotleGift — Tari gift cards on Ootle</title>
+<meta name="description" content="OotleGift turns TARI into a gift card: lock funds behind a secret redemption code, share the code, and let anyone claim it. Built on Tari Ootle.">
+<style>
+  :root{
+    --bg:#0d0b14; --bg2:#14101f; --card:#1a1528; --card2:#211a36;
+    --line:#2e2650; --text:#f2eefc; --muted:#a79fd0; --accent:#9333ea;
+    --accent2:#c084fc; --gold:#f5c451; --green:#34d399; --red:#f87171;
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:"Segoe UI",system-ui,-apple-system,Roboto,"Helvetica Neue",Arial,sans-serif;
+    background:radial-gradient(1200px 600px at 80% -10%,#2a1b4d 0%,transparent 60%),
+               radial-gradient(900px 500px at -10% 20%,#1d1440 0%,transparent 55%),var(--bg);
+    color:var(--text);line-height:1.55}
+  a{color:var(--accent2)}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+  header{padding:22px 0;display:flex;align-items:center;justify-content:space-between}
+  .logo{font-weight:800;font-size:22px;letter-spacing:.3px}
+  .logo .gift{font-size:24px;margin-right:8px}
+  .logo em{font-style:normal;color:var(--gold)}
+  nav a{margin-left:18px;color:var(--muted);text-decoration:none;font-size:15px}
+  nav a:hover{color:var(--text)}
+  .hero{padding:56px 0 30px;text-align:center}
+  .badge{display:inline-block;border:1px solid var(--line);background:var(--card);
+    color:var(--muted);border-radius:999px;padding:5px 14px;font-size:13px;margin-bottom:20px}
+  .badge b{color:var(--gold);font-weight:600}
+  h1{font-size:52px;line-height:1.12;margin:0 0 16px;font-weight:850}
+  h1 .grad{background:linear-gradient(90deg,var(--accent2),var(--gold));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{color:var(--muted);font-size:19px;max-width:680px;margin:0 auto 28px}
+  .cta{display:inline-block;background:linear-gradient(90deg,var(--accent),#7c3aed);
+    color:#fff;text-decoration:none;font-weight:700;padding:14px 30px;border-radius:999px;
+    box-shadow:0 8px 30px rgba(147,51,234,.35)}
+  .cta:hover{filter:brightness(1.1)}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:44px 0 8px}
+  .step{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:22px}
+  .step .n{font-size:26px}
+  .step h3{margin:10px 0 6px;font-size:17px}
+  .step p{margin:0;color:var(--muted);font-size:14.5px}
+  section{padding:34px 0}
+  h2{font-size:28px;margin:0 0 6px}
+  .sub{color:var(--muted);margin:0 0 22px}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+  .panel h3{margin:0 0 4px;font-size:19px}
+  .panel .hint{color:var(--muted);font-size:14px;margin:0 0 16px}
+  label{display:block;font-size:13.5px;color:var(--muted);margin:14px 0 6px}
+  input,textarea,select{width:100%;background:var(--bg2);border:1px solid var(--line);
+    border-radius:10px;color:var(--text);padding:11px 13px;font-size:15px;font-family:inherit}
+  input:focus,textarea:focus{outline:2px solid var(--accent);border-color:transparent}
+  textarea{resize:vertical;min-height:64px}
+  .row{display:flex;gap:10px}
+  .row>*{flex:1}
+  button{cursor:pointer;border:0;border-radius:10px;font-weight:700;font-size:15px;
+    padding:12px 18px;background:linear-gradient(90deg,var(--accent),#7c3aed);color:#fff;width:100%;margin-top:18px}
+  button:hover{filter:brightness(1.12)}
+  button.secondary{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+  button.small{width:auto;margin-top:0;padding:8px 14px;font-size:13.5px}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  .msg{border-radius:10px;padding:12px 14px;font-size:14.5px;margin-top:16px;display:none}
+  .msg.ok{display:block;background:rgba(52,211,153,.12);border:1px solid var(--green);color:#bbf7d0}
+  .msg.err{display:block;background:rgba(248,113,113,.1);border:1px solid var(--red);color:#fecaca}
+  .giftcard{background:linear-gradient(135deg,#3b1470,#1d0f38 60%,#12081f);
+    border:1px solid var(--accent);border-radius:20px;padding:26px;margin-top:18px;position:relative;overflow:hidden}
+  .giftcard:before{content:"🎁";position:absolute;right:14px;top:6px;font-size:74px;opacity:.16}
+  .giftcard .amount{font-size:38px;font-weight:850;color:var(--gold)}
+  .giftcard .amount small{font-size:16px;color:var(--muted);font-weight:600}
+  .giftcard .txt{font-size:17px;margin:8px 0 2px}
+  .giftcard .meta{color:var(--muted);font-size:13.5px}
+  .giftcard .code{font-family:ui-monospace,Menlo,Consolas,monospace;background:rgba(0,0,0,.35);
+    border:1px dashed var(--accent2);border-radius:10px;padding:10px 14px;margin-top:14px;
+    font-size:17px;letter-spacing:1px;display:flex;justify-content:space-between;align-items:center;gap:10px;word-break:break-all}
+  .pill{display:inline-block;border-radius:999px;padding:2px 10px;font-size:12.5px;font-weight:700}
+  .pill.active{background:rgba(52,211,153,.15);color:var(--green);border:1px solid var(--green)}
+  .pill.expired{background:rgba(245,196,81,.12);color:var(--gold);border:1px solid var(--gold)}
+  .pill.redeemed,.pill.reclaimed{background:rgba(167,159,208,.12);color:var(--muted);border:1px solid var(--muted)}
+  .cardrow{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:18px 20px;margin-bottom:12px;display:flex;justify-content:space-between;gap:16px;align-items:center;flex-wrap:wrap}
+  .cardrow .amt{font-weight:800;font-size:20px;color:var(--gold)}
+  .cardrow .meta{color:var(--muted);font-size:13.5px}
+  .cardrow .txt{font-size:15px}
+  .empty{color:var(--muted);border:1px dashed var(--line);border-radius:var(--radius);padding:26px;text-align:center}
+  .onchain{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:24px}
+  .onchain code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13.5px;word-break:break-all}
+  .onchain li{margin:8px 0;color:var(--muted)}
+  .onchain li b{color:var(--text)}
+  .note{border-left:4px solid var(--gold);background:rgba(245,196,81,.07);
+    padding:14px 18px;border-radius:0 12px 12px 0;color:#fde9bd;font-size:14.5px;margin:22px 0}
+  footer{border-top:1px solid var(--line);padding:28px 0 40px;color:var(--muted);font-size:14px;margin-top:20px}
+  @media(max-width:820px){.steps,.grid{grid-template-columns:1fr}h1{font-size:38px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="logo"><span class="gift">🎁</span>Ootle<em>Gift</em></div>
+    <nav>
+      <a href="#app">App</a><a href="#how">How it works</a><a href="#onchain">On-chain</a>
+      <a href="https://github.com/5himq/ootlegift" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <div class="badge">Built on <b>Tari Ootle</b> · November Build Contest — MVP</div>
+    <h1>Send TARI like a <span class="grad">gift card</span>.</h1>
+    <p>Lock TARI behind a secret redemption code, write a message, and share it anywhere —
+       a chat, an email, a birthday card. Anyone with the code can claim the gift.
+       No wallet address needed up front.</p>
+    <a class="cta" href="#app">Create a gift card ↓</a>
+    <div class="steps" id="how">
+      <div class="step"><div class="n">🔒</div><h3>1 · Lock</h3>
+        <p>Create a card with an amount, a message and an optional expiry. Only the
+           SHA-256 hash of the redemption code is stored — never the code itself.</p></div>
+      <div class="step"><div class="n">💌</div><h3>2 · Share</h3>
+        <p>Send the card ID and code to your recipient however you like. The code is the key:
+           whoever holds it can redeem the full amount.</p></div>
+      <div class="step"><div class="n">↩️</div><h3>3 · No waste</h3>
+        <p>If the gift is never claimed, the creator can reclaim the funds after the
+           expiry — gifts never get stuck forever.</p></div>
+    </div>
+  </div>
+
+  <section id="app">
+    <h2>The app</h2>
+    <p class="sub">The full gift-card flow, running in your browser.</p>
+    <div class="grid">
+      <div class="panel">
+        <h3>🎁 Create a gift card</h3>
+        <p class="hint">A redemption code is generated for you. Only its SHA-256 hash is kept on the card.</p>
+        <label for="c-amount">Amount (TARI)</label>
+        <input id="c-amount" type="number" min="0" step="any" placeholder="e.g. 100">
+        <label for="c-message">Message</label>
+        <textarea id="c-message" placeholder="Happy birthday! Coffee is on me."></textarea>
+        <div class="row">
+          <div><label for="c-days">Expiry (days, optional)</label>
+          <input id="c-days" type="number" min="1" step="1" placeholder="e.g. 30"></div>
+          <div><label for="c-code">Redemption code</label>
+          <input id="c-code" type="text" readonly></div>
+        </div>
+        <button id="c-regen" class="secondary" type="button">↻ Generate a new code</button>
+        <button id="c-create" type="button">Create gift card</button>
+        <div class="msg" id="c-msg"></div>
+        <div id="c-result"></div>
+      </div>
+
+      <div class="panel">
+        <h3>🔑 Redeem a gift card</h3>
+        <p class="hint">Received a gift? Enter the card ID and the redemption code to claim it.</p>
+        <label for="r-id">Card ID</label>
+        <input id="r-id" type="text" placeholder="e.g. gift_8f3ka1">
+        <label for="r-code">Redemption code</label>
+        <input id="r-code" type="text" placeholder="GIFT-XXXX-XXXX-XXXX">
+        <button id="r-redeem" type="button">Redeem</button>
+        <div class="msg" id="r-msg"></div>
+        <div id="r-result"></div>
+      </div>
+    </div>
+
+    <h2 style="margin-top:36px">My gift cards</h2>
+    <p class="sub">Cards created or redeemed in this browser. After a card expires,
+       its creator can reclaim the funds here.</p>
+    <div id="cards"></div>
+  </section>
+
+  <section id="onchain">
+    <h2>On-chain</h2>
+    <p class="sub">OotleGift is a real Tari Ootle template written in Rust
+       (<code>GiftCard</code>), verified by engine tests that run the actual Ootle
+       execution engine. The template enforces exactly the rules this page simulates:
+       SHA-256 code check, one-time redemption, owner-only reclaim after expiry.</p>
+    <div class="onchain">
+      <ul>
+        <li><b>Template:</b> <span id="oc-template"><code>GiftCard</code> — publication to the Esmeralda testnet is in progress; the template address will appear here.</span></li>
+        <li><b>Source code &amp; tests:</b> <a href="https://github.com/5himq/ootlegift" target="_blank" rel="noopener">github.com/5himq/ootlegift</a> (MIT license)</li>
+        <li><b>Network:</b> Tari Ootle — Esmeralda testnet (indexer: <a href="https://esme-indexer-a.ootle.tari.com" target="_blank" rel="noopener">esme-indexer-a.ootle.tari.com</a>)</li>
+      </ul>
+    </div>
+    <div class="note"><b>Honest labelling:</b> this hosted demo is a browser simulation of the
+      template's rules (state is kept in your browser's local storage, and amounts are
+      simulated TARI). The on-chain rules live in the Rust template in the repository,
+      which is covered by engine tests. No real funds move on this page.</div>
+  </section>
+
+  <footer>
+    OotleGift · An open-source (MIT) entry to the Tari November Build Contest 2026 ·
+    Template: Rust / tari_template_lib · Demo: plain HTML/CSS/JS, no build step ·
+    <a href="https://github.com/5himq/ootlegift" target="_blank" rel="noopener">Source</a>
+  </footer>
+</div>
+
+<script>
+"use strict";
+// ---------------------------------------------------------------------------
+// OotleGift browser simulation.
+//
+// This mirrors the Rust GiftCard template rule-for-rule:
+//  * a card is created with an amount, the SHA-256 hash of a redemption code
+//    (the code itself is never stored on the card), a message and an
+//    optional expiry;
+//  * redeem(code): fails if the card is already redeemed or reclaimed, or if
+//    sha256(code) != code_hash; otherwise pays out the full balance once;
+//  * reclaim(): creator only, only at/after expiry; a card without expiry can
+//    never be reclaimed;
+//  * status: active / expired / redeemed / reclaimed.
+// On-chain, time is measured in epochs; here we use wall-clock timestamps.
+// ---------------------------------------------------------------------------
+const LS_KEY = "ootlegift_cards_v1";
+const $ = id => document.getElementById(id);
+
+async function sha256Hex(text){
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,"0")).join("");
+}
+function loadCards(){
+  try { return JSON.parse(localStorage.getItem(LS_KEY)) || []; }
+  catch(e){ return []; }
+}
+function saveCards(cards){ localStorage.setItem(LS_KEY, JSON.stringify(cards)); }
+function newId(){
+  const a = "abcdefghjkmnpqrstuvwxyz23456789";
+  let s = ""; const rnd = new Uint8Array(6); crypto.getRandomValues(rnd);
+  rnd.forEach(b => s += a[b % a.length]);
+  return "gift_" + s;
+}
+function genCode(){
+  const a = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const part = () => { let s=""; const rnd=new Uint8Array(4); crypto.getRandomValues(rnd);
+    rnd.forEach(b => s += a[b % a.length]); return s; };
+  return "GIFT-" + part() + "-" + part() + "-" + part();
+}
+function statusOf(card, now){
+  if (card.redeemed) return "redeemed";
+  if (card.reclaimed) return "reclaimed";
+  if (card.expiryTs && now >= card.expiryTs) return "expired";
+  return "active";
+}
+function fmtAmount(n){ return (Math.round(n*100)/100).toLocaleString("en-US"); }
+function fmtDate(ts){ return new Date(ts).toLocaleString(); }
+function showMsg(el, text, ok){
+  el.textContent = text;
+  el.className = "msg " + (ok ? "ok" : "err");
+}
+function cardHtml(card, code){
+  const st = statusOf(card, Date.now());
+  return '<div class="giftcard">' +
+    '<div class="amount">' + fmtAmount(card.balance) + ' <small>TARI</small></div>' +
+    '<div class="txt">“' + escapeHtml(card.message || "") + '”</div>' +
+    '<div class="meta">Card ID: <b>' + card.id + '</b> · Status: <span class="pill ' + st + '">' + st + '</span></div>' +
+    '<div class="meta">' + (card.expiryTs ? "Expires: " + fmtDate(card.expiryTs) : "No expiry — cannot be reclaimed") + '</div>' +
+    (code ? '<div class="code"><span>' + code + '</span>' +
+      '<button class="small secondary" type="button" onclick="copyShare(\'' + card.id + '\')">Copy share text</button></div>' : '') +
+    '</div>';
+}
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
+window.copyShare = function(id){
+  const cards = loadCards();
+  const card = cards.find(c => c.id === id);
+  if (!card || !card.lastCode) return;
+  const text = "🎁 You received a Tari gift card!\n" +
+    "Amount: " + fmtAmount(card.amount) + " TARI\n" +
+    (card.message ? "Message: " + card.message + "\n" : "") +
+    "Card ID: " + card.id + "\n" +
+    "Redemption code: " + card.lastCode + "\n" +
+    "Redeem it here: " + location.href.split("#")[0] + "#app";
+  navigator.clipboard.writeText(text).then(() => alert("Share text copied — send it to your recipient!"));
+};
+
+// --- Create -----------------------------------------------------------------
+$("c-code").value = genCode();
+$("c-regen").addEventListener("click", () => { $("c-code").value = genCode(); });
+$("c-create").addEventListener("click", async () => {
+  const amount = parseFloat($("c-amount").value);
+  const message = $("c-message").value.trim();
+  const daysRaw = $("c-days").value.trim();
+  const code = $("c-code").value.trim();
+  const msgEl = $("c-msg");
+  if (!amount || amount <= 0) return showMsg(msgEl, "Enter an amount greater than zero.", false);
+  if (!code) return showMsg(msgEl, "A redemption code is required.", false);
+  let expiryTs = null;
+  if (daysRaw !== "") {
+    const days = parseFloat(daysRaw);
+    if (!days || days <= 0) return showMsg(msgEl, "Expiry must be a positive number of days.", false);
+    expiryTs = Date.now() + days * 24 * 60 * 60 * 1000;
+  }
+  const card = {
+    id: newId(),
+    amount: amount,
+    balance: amount,
+    message: message,
+    codeHash: await sha256Hex(code),   // only the hash is stored, like the template
+    expiryTs: expiryTs,
+    createdTs: Date.now(),
+    redeemed: false,
+    reclaimed: false,
+    mine: true,                        // created in this browser (the "creator")
+    lastCode: code                     // kept locally so the creator can share it
+  };
+  const cards = loadCards(); cards.unshift(card); saveCards(cards);
+  showMsg(msgEl, "Gift card created! Share the card ID and code with your recipient.", true);
+  $("c-result").innerHTML = cardHtml(card, code);
+  $("c-code").value = genCode();
+  renderCards();
+});
+
+// --- Redeem -----------------------------------------------------------------
+$("r-redeem").addEventListener("click", async () => {
+  const id = $("r-id").value.trim();
+  const code = $("r-code").value.trim();
+  const msgEl = $("r-msg");
+  const cards = loadCards();
+  const card = cards.find(c => c.id === id);
+  if (!card) return showMsg(msgEl, "Card not found. Check the card ID (cards live in the browser that created them in this simulation).", false);
+  if (card.redeemed) return showMsg(msgEl, "This gift card has already been redeemed.", false);
+  if (card.reclaimed) return showMsg(msgEl, "This gift card has already been reclaimed by its creator.", false);
+  const digest = await sha256Hex(code);
+  if (digest !== card.codeHash) return showMsg(msgEl, "Incorrect redemption code.", false);
+  card.redeemed = true;
+  const paid = card.balance; card.balance = 0;
+  saveCards(cards);
+  showMsg(msgEl, "🎉 Redeemed! " + fmtAmount(paid) + " TARI paid out.", true);
+  $("r-result").innerHTML = cardHtml(card, null);
+  renderCards();
+});
+
+// --- My cards + reclaim -------------------------------------------------------
+function renderCards(){
+  const cards = loadCards();
+  const box = $("cards");
+  if (!cards.length){
+    box.innerHTML = '<div class="empty">No gift cards yet — create your first one above.</div>';
+    return;
+  }
+  const now = Date.now();
+  box.innerHTML = cards.map(card => {
+    const st = statusOf(card, now);
+    const canReclaim = card.mine && st === "expired";
+    return '<div class="cardrow"><div>' +
+      '<span class="amt">' + fmtAmount(card.balance) + ' TARI</span> ' +
+      '<span class="pill ' + st + '">' + st + '</span>' +
+      '<div class="txt">“' + escapeHtml(card.message || "") + '”</div>' +
+      '<div class="meta">ID: ' + card.id + ' · Created: ' + fmtDate(card.createdTs) +
+      (card.expiryTs ? ' · Expires: ' + fmtDate(card.expiryTs) : ' · No expiry') +
+      (card.mine ? ' · You are the creator' : '') + '</div></div>' +
+      (canReclaim ? '<button class="small" type="button" onclick="reclaim(\'' + card.id + '\')">Reclaim ' + fmtAmount(card.balance) + ' TARI</button>' : '') +
+      '</div>';
+  }).join("");
+}
+window.reclaim = function(id){
+  const cards = loadCards();
+  const card = cards.find(c => c.id === id);
+  if (!card) return;
+  // Same checks as the template's reclaim():
+  if (!card.mine) return alert("Only the creator can reclaim this gift card.");
+  if (card.redeemed) return alert("This gift card has already been redeemed.");
+  if (card.reclaimed) return alert("This gift card has already been reclaimed.");
+  if (!card.expiryTs) return alert("This gift card has no expiry and cannot be reclaimed.");
+  if (Date.now() < card.expiryTs) return alert("This gift card has not expired yet.");
+  card.reclaimed = true;
+  const back = card.balance; card.balance = 0;
+  saveCards(cards);
+  alert("Reclaimed " + fmtAmount(back) + " TARI back to the creator.");
+  renderCards();
+};
+renderCards();
+</script>
+</body>
+</html>

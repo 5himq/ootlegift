@@ -1,0 +1,2 @@
+name = "GiftCard"
+description = "OotleGift: a Tari gift card. Lock TARI behind a SHA-256 redemption code; anyone with the code can redeem, the creator can reclaim after expiry."
