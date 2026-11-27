@@ -63,10 +63,17 @@ labelled as a simulation on the page; no real funds move there.
 ## On-chain status
 
 The template is written against the public Esmeralda testnet toolchain and
-verified by the engine tests above. Publication of the template to Esmeralda
-(template address + indexer links) is being finalized; this section and the
-demo's "On-chain" section will be updated with the addresses once the publish
-transaction is confirmed.
+verified by the engine tests above. A wallet account for publishing has been
+created on Esmeralda with `tari_ootle_walletd`
+(`component_961e9eba88e762a6f1e324f2ef41a2994aa6113a6e837954cdcf092d47231872`),
+but publication is **pending a funded account**: the Esmeralda faucet is
+currently empty (verified on-chain via the wallet daemon), and the
+alternative funding route — mining testnet Minotari on L1, burning it and
+claiming TARI on L2 — requires a synced Minotari node, which could not
+establish stable L1 peer connections from the build environment used for
+this entry. Once the account is funded, publishing is a single wallet
+transaction; the template address and indexer links will be added here and
+in the demo's "On-chain" section.
 
 ## Repository layout
 
